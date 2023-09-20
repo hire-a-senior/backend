@@ -1,7 +1,9 @@
 package com.developers.hireasenior.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,6 +18,7 @@ import java.util.*;
 @Data
 @Table(name = "accounts")
 @JsonPropertyOrder({"id", "firstName", "email", "password", "verified", "role", "title", "hourlyPrice", "currency", "createdAt", "updatedAt"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "sessionRequests", "technologies", "languagesSpoken"})
 public class Account implements UserDetails {
     @Id
     @GeneratedValue(generator = "UUID")
