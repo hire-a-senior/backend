@@ -31,6 +31,7 @@ public class Account implements UserDetails {
     private Title title;
     private Double hourlyPrice;
     private String currency;
+  
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
     @OneToMany(mappedBy = "junior")
@@ -44,7 +45,13 @@ public class Account implements UserDetails {
     @JoinTable(name = "languages_spoken", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "language_id"))
     private Set<Language> languagesSpoken = new HashSet<>();
 
-    private String availablePeriod;
+    @ManyToMany(cascade=CascadeType.ALL)
+    @JoinTable(
+            name = "developer_available_periods",
+            joinColumns = @JoinColumn(name = "account_id"),
+            inverseJoinColumns = @JoinColumn(name = "available_period_id")
+    )
+    private Set<AvailablePeriod> availablePeriods;
     private Date dateOfBirth;
     @CreatedDate
     private Date createdAt = new Date();

@@ -5,6 +5,7 @@ import com.developers.hireasenior.dto.response.AuthenticationResponse;
 import com.developers.hireasenior.exception.InvalidCredentialsException;
 import com.developers.hireasenior.exception.ResourceNotFoundException;
 import com.developers.hireasenior.exception.TitleNotAllowedException;
+import com.developers.hireasenior.mapper.AccountMapper;
 import com.developers.hireasenior.model.Role;
 import com.developers.hireasenior.model.Title;
 import com.developers.hireasenior.model.VerifyEmail;
@@ -26,7 +27,6 @@ import com.developers.hireasenior.dto.request.RegistrationRequest;
 import com.developers.hireasenior.dto.response.ApiResponse;
 import com.developers.hireasenior.dto.response.RegistrationResponse;
 import com.developers.hireasenior.exception.EmailAlreadyExistsException;
-import com.developers.hireasenior.mapper.AccountMapper;
 import com.developers.hireasenior.model.Account;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -35,8 +35,9 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class AuthService implements UserDetailsService {
-    private final AccountRepository accountRepository;
+
     private final AccountMapper accountMapper;
+    private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final MailService mailService;
@@ -51,25 +52,28 @@ public class AuthService implements UserDetailsService {
                 throw new EmailAlreadyExistsException("Email already exists.");
             }
 
-            String ecryptedPassword = passwordEncoder.encrypt(request.getPassword());
+            String encryptedPassword = passwordEncoder.encrypt(request.getPassword());
             Account newAccount = new Account();
             newAccount.setFirstName(request.getFirstName());
             newAccount.setTitle(request.getTitle());
             newAccount.setEmail(request.getEmail());
-            newAccount.setPassword(ecryptedPassword);
+            newAccount.setPassword(encryptedPassword);
             newAccount.setRole(Role.USER);
             newAccount.setCurrency(request.getCurrency());
             newAccount.setHourlyPrice(request.getHourlyPrice());
             newAccount.setTechnologies(request.getTechnologies());
             newAccount.setLanguagesSpoken(request.getLanguagesSpoken());
-            newAccount.setAvailablePeriod(request.getAvailablePeriod());
+            newAccount.setAvailablePeriods(request.getAvailablePeriods());
             newAccount.setDateOfBirth(request.getDateOfBirth());
 
             Account account = accountRepository.save(newAccount);
             logger.info("Account registered successfully: {}", account.getFirstName());
+
             VerifyEmail verifyEmail = verificationService.createVerification(account.getEmail());
             mailService.sendVerificationMail(request.getEmail(), verifyEmail.getToken());
-            return new ApiResponse<>(true, new RegistrationResponse(accountMapper.toDto(account)),
+
+            RegistrationResponse registrationResponse = new RegistrationResponse(accountMapper.accountEntityToDto(account));
+            return new ApiResponse<>(true, registrationResponse,
                     "Account created successfully.");
         } catch(EmailAlreadyExistsException e) {
             logger.error("Email already exists: " + request.getEmail());
