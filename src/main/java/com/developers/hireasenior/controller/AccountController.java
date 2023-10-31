@@ -1,7 +1,7 @@
 package com.developers.hireasenior.controller;
 
 import com.developers.hireasenior.dto.AccountDto;
-import com.developers.hireasenior.dto.request.TechnologyAndPeriodRequest;
+import com.developers.hireasenior.dto.request.ListSeniorsRequest;
 import com.developers.hireasenior.dto.response.ApiResponse;
 import com.developers.hireasenior.service.AccountService;
 import jakarta.validation.Valid;
@@ -19,31 +19,8 @@ public class AccountController {
 
     private final AccountService accountService;
 
-    @PostMapping("/developers-by-technologies-and-available-time")
-    public ResponseEntity<ApiResponse<List<AccountDto>>> filteredSeniorsTechnologyTime(@Valid @RequestBody TechnologyAndPeriodRequest technologyAndPeriodRequest) {
-        ApiResponse<List<AccountDto>> apiAccountsByTechnologies = accountService.findByTechnologies(technologyAndPeriodRequest.getTechnologyDtoSet());
-
-        if(NotFound(apiAccountsByTechnologies))
-            return ResponseEntity.ok(apiAccountsByTechnologies);
-
-        ApiResponse<List<AccountDto>> apiAccountsAvailableTime = accountService.findByPeriodTime(technologyAndPeriodRequest.getStartedAt(), technologyAndPeriodRequest.getEndedAt());
-
-        if(NotFound(apiAccountsAvailableTime))
-            return ResponseEntity.ok(apiAccountsByTechnologies);
-
-        List<AccountDto> result = apiAccountsByTechnologies.getData().stream()
-                .distinct()
-                .filter(apiAccountsAvailableTime.getData()::contains)
-                .collect(Collectors.toList());
-
-        return  ResponseEntity.ok(new ApiResponse<>(true, result, "Successfully found developers."));
+    @PostMapping("/list-seniors")
+    public ResponseEntity<ApiResponse<List<AccountDto>>> listSeniors(@Valid @RequestBody ListSeniorsRequest request) {
+        return ResponseEntity.ok(accountService.listSeniors(request));
     }
-
-    private boolean NotFound(ApiResponse<List<AccountDto>> apiResponse){
-        if(!apiResponse.isSuccess() || apiResponse.getData() == null)
-            return true;
-
-        return false;
-    }
-
 }

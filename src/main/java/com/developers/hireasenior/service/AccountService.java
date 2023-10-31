@@ -2,6 +2,7 @@ package com.developers.hireasenior.service;
 
 import com.developers.hireasenior.dto.AccountDto;
 import com.developers.hireasenior.dto.TechnologyDto;
+import com.developers.hireasenior.dto.request.ListSeniorsRequest;
 import com.developers.hireasenior.dto.response.ApiResponse;
 import com.developers.hireasenior.mapper.AccountMapper;
 import com.developers.hireasenior.model.Account;
@@ -29,47 +30,23 @@ public class AccountService {
    private final TechnologyRepository technologyRepository;
 
 
-    public ApiResponse<List<AccountDto>> findByTechnologies(Set<TechnologyDto> technologiesDto){
+    public ApiResponse<List<AccountDto>> listSeniors(ListSeniorsRequest listSeniorsRequest){
         try{
-            Set<String> technologyCodes = technologiesDto
-                    .stream()
-                    .map(TechnologyDto::getCode)
-                    .collect(Collectors.toSet());
+            Set<Technology> technologies = technologyRepository.findAllByCodeIn(listSeniorsRequest.getTechnologies());
 
-            Set<Technology> technologies = technologyRepository.findAllByCodeIn(technologyCodes);
             List<Account> accounts = accountRepository.findAllByTechnologiesIn(technologies);
 
             if (accounts.isEmpty() || accounts == null){
                 logger.debug("Not found any developers.");
-                return new ApiResponse<>(true, null, "Not found account with selected technologies.");
+                return new ApiResponse<>(true, null, "Not found any developers with selected technologies.", false);
             }
 
             logger.debug("Successfully found developers by technologies.");
-            return new ApiResponse<>(true, accountMapper.accountListToDtoList(accounts), "Accounts successfully found.");
+            return new ApiResponse<>(true, accountMapper.accountListToDtoList(accounts), "Accounts successfully found.", false);
         }
         catch (Exception e){
             logger.error("Error occur when trying find account.");
-            return new ApiResponse<>(false, null, "Error occur when trying find account.");
+            return new ApiResponse<>(false, null, "Error occur when trying find account.", false);
         }
     }
-
-    public ApiResponse<List<AccountDto>> findByPeriodTime(Date startedAt, Date endedAt){
-        try {
-
-            List<Account> accounts = accountRepository.findAllByAvailablePeriodsInDateRange(startedAt, endedAt);
-            if(accounts.isEmpty()){
-                logger.debug("Not found any developers.");
-                return new ApiResponse<>(true, null, "Not found account in period:" + startedAt + " - " + endedAt);
-            }
-            logger.debug("Successfully found developers by technologies.");
-            List<AccountDto> accountDtos = accountMapper.accountListToDtoList(accounts);
-            return new ApiResponse<>(true, accountDtos, "Accounts in period:" + startedAt + " - " + endedAt + " successfully found");
-
-        }
-        catch (Exception e){
-            logger.error("Error occur when trying find developer in period:" + startedAt + " - " + endedAt);
-            return new ApiResponse<>(false, null, "Error occur when trying find developer in period:" + startedAt + " - " + endedAt);
-        }
-    }
-
 }
