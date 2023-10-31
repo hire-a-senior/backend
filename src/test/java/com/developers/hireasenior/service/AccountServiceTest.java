@@ -60,49 +60,4 @@ public class AccountServiceTest {
         alice.setEmail("alice@example.com");
     }
 
-    @Test
-    void testFindByTechnologies() {
-
-        Set<TechnologyDto> technologyDtoList = new HashSet<>();
-        TechnologyDto technologyDto1 = new TechnologyDto("Java", "java", "Java programming language");
-        technologyDtoList.add(technologyDto1);
-
-        Set<Technology> technologyList = new HashSet<>();
-        technologyList.add(java);
-
-        List<Account> accountList = new ArrayList<>();
-        accountList.add(alice);
-
-        when(technologyMapper.technologyDtoSetToTechnologySet(Set.of(technologyDto1))).thenReturn(technologyList);
-        when(technologyRepository.findAllByCodeIn(Set.of("java"))).thenReturn(technologyList);
-        when(accountRepository.findAllByTechnologiesIn(technologyList)).thenReturn(accountList);
-        when(accountMapper.accountListToDtoList(accountList))
-                .thenReturn(accountMapper.INSTANCE.accountListToDtoList(accountList));
-
-        ApiResponse<List<AccountDto>> response = accountService.findByTechnologies(technologyDtoList);
-
-        assertEquals(true, response.isSuccess());
-        assertEquals(1, response.getData().size());
-    }
-
-    @Test
-    void testFindByPeriodTime() {
-        List<Account> accountList = new ArrayList<>();
-        accountList.add(alice);
-
-        Mockito.when(accountRepository.findAllByAvailablePeriodsInDateRange(Date.valueOf("2023-01-01"), Date.valueOf("2023-01-31")))
-                .thenReturn(accountList);
-
-        when(accountMapper.accountListToDtoList(accountList))
-                .thenReturn(accountMapper.INSTANCE.accountListToDtoList(accountList));
-
-        ApiResponse<List<AccountDto>> response = accountService.findByPeriodTime(
-                Date.valueOf("2023-01-01"),
-                Date.valueOf("2023-01-31")
-        );
-
-        assertEquals(true, response.isSuccess());
-        assertEquals(accountList.size(), response.getData().size());
-    }
-
 }

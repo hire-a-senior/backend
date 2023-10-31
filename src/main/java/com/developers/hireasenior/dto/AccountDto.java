@@ -15,14 +15,11 @@ import java.util.Set;
 public class AccountDto {
     private String firstName;
     private String email;
-    private String password;
     private Boolean verified;
-    private Role role;
     private Title title;
     private Double hourlyPrice;
     private String currency;
     private Set<Technology> technologies;
     private Set<Language> languagesSpoken;
-    private Set<AvailablePeriod> availablePeriods;
     private Date dateOfBirth;
 }
